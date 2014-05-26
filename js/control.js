@@ -8,17 +8,18 @@
 
 // using requestAnimFrame for smoother animations
 // see http://html5hub.com/request-animation-frame-for-better-performance/#i.mrc38s13une1qq
-window.requestAnimFrame = (function() {
-    return 
-    window.requestAnimationFrame ||
-    window.webkitRequestAnimationFrame ||
-    window.mozRequestAnimationFrame ||
-    window.oRequestAnimationFrame ||
-    window.msRequestAnimationFrame ||
-    function(callback) {
-        window.setTimeOut(callback, 1000 / 60);
-    };
-})();
+window.requestAnimFrame = function() {
+    return (
+            window.requestAnimationFrame        ||
+            window.webkitRequestAnimationFrame  ||
+            window.mozRequestAnimationFrame     ||
+            window.oRequestAnimationFrame       ||
+            window.msRequestAnimationFrame      ||
+            function(/* function */ callback) {
+                window.setTimeout(callback, 1000 / 60);
+            }
+            );
+}();
 
 
 // utility functions
@@ -52,13 +53,8 @@ function animate(w, ctx) {
     // update the world time
     w.time = Date.now();
 
-    console.log("Animating!");
-    console.log("Diff: ");
-    console.log(diff);
-    console.log("Time: ");
-    console.log(w.time);
-    console.log(w.me.x);
-    console.log(w.me.y);
+    console.log("Timestep: " + diff);
+    console.log("Bunny coords: (" + w.me.x + ", " + w.me.y + ")");
 
     // call animate again with the updated world and context
     requestAnimFrame(function() {
