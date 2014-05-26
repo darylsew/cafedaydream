@@ -41,41 +41,72 @@ function getMousePos(canvas, e) {
     };
 }
 
-// animate function, does *everything*
 // w - world representation (i.e. model)
-// ctx - html canvas 2d graphics context (i.e. view)
-function animate(w, ctx) {
-    // calculate timestep difference
-    var diff = w.time - w.startTime;
-    // animate stuff using diff
-    
-    
-    // update the world time
-    w.time = Date.now();
+// c - html canvas (i.e. view)
+function animate(w, canvas) {
+    w.timestep = w.time - w.startTime;
+//    console.log("Timestep: " + w.timestep);
+//    console.log("Bunny coords: (" + w.objects[0].x + ", " + w.objects[0].y + ")");
 
-    console.log("Timestep: " + diff);
-    console.log("Bunny coords: (" + w.me.x + ", " + w.me.y + ")");
+    // get the graphics context from the canvas
+    // this is an object that lets us draw onto the canvas
+    var ctx = canvas.getContext("2d");
+    // clear context to draw the new stuff
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // render our world representation onto the view
+    renderWorld(w, ctx);
+
+//    console.log("World before: " + w.objects[0].y);
+    // make updates to the world - time, gravity, etc
+    updateWorld(w);
+//    console.log("World after: " + w.objects[0].y);
 
     // call animate again with the updated world and context
+    // in other words, request a new animation frame once the current one
+    // is done rendering.
     requestAnimFrame(function() {
-        animate(w, ctx);
+        animate(w, canvas);
+    });
+}
+
+// for any updates to our world
+function updateWorld(w) {
+    w.time = Date.now();
+    // TODO verify
+    // loop through objects, update positions
+    // x = vit + at^2
+    w.objects.forEach(function (o) {
+        console.log("velb4: " + o.v);
+        o.v -= w.acceleration;
+        o.y -= o.v;
+    });
+    return w;
+}
+
+// for rendering our world to the view
+function renderWorld(w, ctx) {
+    // TODO verify
+    // loop through objects, draw each
+    // for now, draw circles; later we'll draw images
+    w.objects.forEach(function (o) {
+        drawCircle(ctx, o.x, o.y, 20);
     });
 }
 
 $(document).ready(function() {
     var canvas = $("#canvas")[0];
-    var ctx = canvas.getContext("2d");
 
-    // bunny constants
+    // bunny constants. (x, y) initial position on canvas
     var bunny = {
         x : 200,
-        y : 200
+        y : 200,
+        v : 0
     };
 
     canvas.addEventListener("mousemove", function(e) {
         var mousePos = getMousePos(canvas, e);
         bunny.x = mousePos.x;
-        bunny.y = mousePos.y;
+        //bunny.y = mousePos.y;
     });
 
     
@@ -83,8 +114,11 @@ $(document).ready(function() {
     var world = {
         startTime : Date.now(),
         time : Date.now(),
-        me : bunny
+        objects : [bunny], 
+        acceleration : 10
     };
 
-    animate(world, ctx);
+    console.log("bunny vel here: " + world.objects[0].v);
+
+    animate(world, canvas);
 });
