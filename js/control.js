@@ -42,8 +42,8 @@ function getMousePos(canvas, e) {
 // c - html canvas (i.e. view)
 function animate(w, canvas) {
     w.timestep = w.time - w.startTime;
-    //console.log("Timestep: " + w.timestep);
-    //console.log("Bunny coords: (" + w.objects[0].x + ", " + w.objects[0].y + ")");
+    console.log("Timestep: " + w.timestep);
+    console.log("Bunny coords: (" + w.objects[0].x + ", " + w.objects[0].y + ")");
 
     // get the graphics context from the canvas
     // this is an object that lets us draw onto the canvas
@@ -70,15 +70,16 @@ function updateWorld(w) {
     // x = vit + at^2
     w.objects.forEach(function (o) {
         o.v -= w.acceleration;
-        o.y += o.v;
+        o.y -= o.v;
     });
 }
 
 // for rendering the world to the view
 function renderWorld(w, ctx) {
-    // loop through objects, draw each
+    // loop through objects in the world and draw circles for each of them
+    // TODO draw image sprites based on objects, 
+    // which will store filepaths to images
     w.objects.forEach(function (o) {
-        console.log("Coords plotting: (" + o.x + ", " + o.y + ")");
         drawCircle(ctx, o.x, o.y, 20);
     });
 }
@@ -89,7 +90,7 @@ $(document).ready(function() {
     // bunny constants. (x, y) initial position on canvas
     var bunny = {
         x : 200,
-        y : 200,
+        y : 10,
         v : 0
     };
 
@@ -105,7 +106,7 @@ $(document).ready(function() {
         startTime : Date.now(),
         time : Date.now(),
         objects : [bunny], 
-        acceleration : .0001
+        acceleration : .01
     };
 
     animate(world, canvas);
