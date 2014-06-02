@@ -50,7 +50,7 @@ function animate(w, canvas) {
     var ctx = canvas.getContext("2d");
     // clear context to draw the new stuff
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    renderWorld(w, ctx);
+    renderWorld(w, canvas);
 
     // make updates to the world - time, gravity, etc
     updateWorld(w);
@@ -75,14 +75,19 @@ function updateWorld(w) {
 }
 
 // for rendering the world to the view
-function renderWorld(w, ctx) {
+function renderWorld(w, canvas) {
     // loop through objects in the world and draw circles for each of them
     // TODO draw image sprites based on objects, 
     // which will store filepaths to images
-    w.objects.forEach(function (o) {
-        drawCircle(ctx, o.x, o.y, 20);
-    });
-	$("#bg").css("background-position-y", (w.objects[0].y - 10)*2);
+	var ctx = canvas.getContext("2d");
+	if (w.objects[0].y < canvas.height) {
+			w.objects.forEach(function (o) {
+					drawCircle(ctx, o.x, o.y, 20);
+			});
+			$("#bg").css("background-position-y", (w.objects[0].y - 10)*2);
+	} else {
+		alert ("hello");
+	}
 }
 
 $(document).ready(function() {
