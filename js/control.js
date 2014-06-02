@@ -82,6 +82,7 @@ function renderWorld(w, ctx) {
     w.objects.forEach(function (o) {
         drawCircle(ctx, o.x, o.y, 20);
     });
+	$("#bg").css("background-position-y", (w.objects[0].y - 10)*2);
 }
 
 $(document).ready(function() {
