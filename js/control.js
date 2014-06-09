@@ -10,15 +10,15 @@
 // see http://html5hub.com/request-animation-frame-for-better-performance/#i.mrc38s13une1qq
 window.requestAnimFrame = function() {
     return (
-            window.requestAnimationFrame        ||
-            window.webkitRequestAnimationFrame  ||
-            window.mozRequestAnimationFrame     ||
-            window.oRequestAnimationFrame       ||
-            window.msRequestAnimationFrame      ||
-            function(/* function */ callback) {
-                window.setTimeout(callback, 1000 / 60);
-            }
-            );
+        window.requestAnimationFrame        ||
+        window.webkitRequestAnimationFrame  ||
+        window.mozRequestAnimationFrame     ||
+        window.oRequestAnimationFrame       ||
+        window.msRequestAnimationFrame      ||
+        function(/* function */ callback) {
+        window.setTimeout(callback, 1000 / 60);
+    }
+    );
 }();
 
 
@@ -30,7 +30,7 @@ function drawCircle(ctx, x, y, r) {
     ctx.arc(x, y, r, 0, 2*Math.PI, true);
     ctx.fill();
 }
-  
+
 function getMousePos(canvas, e) {
     var rect = canvas.getBoundingClientRect();
     return {
@@ -80,36 +80,39 @@ function renderWorld(w, canvas) {
     // loop through objects in the world and draw circles for each of them
     // TODO draw image sprites based on objects, 
     // which will store filepaths to images
-	var ctx = canvas.getContext("2d");
+    var ctx = canvas.getContext("2d");
 
-	//scaling factor... could probably be cleaned up
-	// so much fizix... using d = vit + 1/2at^2 to find time
-	// ok pls fizix why isn't this correct ;-;
-	var factor = Math.sqrt(2*w.acceleration*canvas.height);
-	document.getElementById("bg").getContext("2d").canvas.height =
-			canvas.height *factor;
-	
-	//testing remove scrolling -- scaling seems to add overflow
-	// uhh i found this online
-	// http://stackoverflow.com/questions/19817899/jquery-or-javascript-how-to-disable-window-scroll-without-overflowhidden
-	$('body').on({
-		'mousewheel': function(e) {
-	    if (e.target.id == 'el') return;
-		    e.preventDefault();
-		    e.stopPropagation();
-	    }
-	})
+    //scaling factor... could probably be cleaned up
+    // so much fizix... using d = vit + 1/2at^2 to find time
+    // ok pls fizix why isn't this correct ;-;
+    var factor = Math.sqrt(2*w.acceleration*canvas.height);
+    document.getElementById("bg").getContext("2d").canvas.height =
+        canvas.height *factor;
 
-	// drawing circle && panning
-	if (w.objects[0].y < canvas.height) {
-			w.objects.forEach(function (o) {
-				drawCircle(ctx, o.x, o.y, 20);
+    //testing remove scrolling -- scaling seems to add overflow
+    // uhh i found this online
+    // http://stackoverflow.com/questions/19817899/jquery-or-javascript-how-to-disable-window-scroll-without-overflowhidden
+    $('body').on({
+        'mousewheel': function(e) {
+            if (e.target.id == 'el') return;
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    })
 
-			});
-			$("#bg").css("background-position-y",-(w.objects[0].y - 10));
-	} else {
-		alert ("hello");
-	}
+    // drawing circle && panning
+    if (w.objects[0].y < canvas.height) {
+        w.objects.forEach(function (o) {
+            drawCircle(ctx, o.x, o.y, 20);
+
+        });
+        $("#bg").css("background-position-y",-(w.objects[0].y - 10));
+    } else {
+        if (!w.over) {
+            alert("oh noes, you're falling too fast!");
+            w.over = true;
+        }
+    }
 }
 
 $(document).ready(function() {
@@ -128,13 +131,14 @@ $(document).ready(function() {
         //bunny.y = mousePos.y;
     });
 
-    
+
     // world representation; initially no bubbles/obstacles
     var world = {
-        startTime : Date.now(),
-        time : Date.now(),
-        objects : [bunny], 
-        acceleration : .01
+        startTime: Date.now(),
+        time: Date.now(),
+        objects: [bunny], 
+        acceleration: .01,
+        over: false
     };
 
     animate(world, canvas);
