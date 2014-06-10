@@ -108,7 +108,7 @@ function renderWorld(w, canvas) {
             e.preventDefault();
             e.stopPropagation();
         }
-    })
+    });
 
     // drawing circle && panning
     if (w.objects[0].y < canvas.height) {
