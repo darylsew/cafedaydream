@@ -24,8 +24,10 @@ window.requestAnimFrame = function() {
 
 
 // utility functions
-function drawCircle(ctx, x, y, r) {
-    ctx.fillStyle = "rgba(0, 200, 200, 0.5)";
+function drawCircle(ctx, x, y, r, color) {
+    // lovely shade of blue
+    // ctx.fillStyle = "rgba(0, 200, 200, 0.5)";
+    ctx.fillStyle = color;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, 2*Math.PI, true);
     ctx.fill();
@@ -54,7 +56,7 @@ function animate(w, canvas) {
     renderWorld(w, canvas);
 
     // make updates to the world - time, gravity, etc
-    updateWorld(w);
+    updateWorld(w, canvas);
 
     // call animate again with the updated world and context
     // in other words, request a new animation frame once the current one
@@ -65,14 +67,22 @@ function animate(w, canvas) {
 }
 
 // for any updates to our world
-function updateWorld(w) {
+function updateWorld(w, canvas) {
     w.time = Date.now();
     // loop through objects, update positions
     // x = vit + at^2
     w.objects.forEach(function (o) {
-        o.v -= w.acceleration;
-        o.y -= o.v;
+        // TODO might want to add drag here to be slightly more accurate
+        o.velocity -= w.gravity;
+        o.velocity += o.buoyancy;
+        o.y -= o.velocity;
     });
+
+
+    // TODO don't add bubbles randomly, add them to beat of a song
+    if (Math.random()*100 < 2) {
+        w.objects[w.objects.length] = bubble(canvas, 25, .02, "rgba(255, 255, 255, 0.5");
+    }
 }
 
 // for rendering the world to the view
@@ -82,12 +92,12 @@ function renderWorld(w, canvas) {
     // which will store filepaths to images
     var ctx = canvas.getContext("2d");
 
-    //scaling factor... could probably be cleaned up
+    // scaling factor... could probably be cleaned up
     // so much fizix... using d = vit + 1/2at^2 to find time
     // ok pls fizix why isn't this correct ;-;
-    var factor = Math.sqrt(2*w.acceleration*canvas.height);
+    var factor = Math.sqrt(2*w.gravity*canvas.height);
     document.getElementById("bg").getContext("2d").canvas.height =
-        canvas.height *factor;
+        canvas.height * factor;
 
     //testing remove scrolling -- scaling seems to add overflow
     // uhh i found this online
@@ -103,8 +113,7 @@ function renderWorld(w, canvas) {
     // drawing circle && panning
     if (w.objects[0].y < canvas.height) {
         w.objects.forEach(function (o) {
-            drawCircle(ctx, o.x, o.y, 20);
-
+            drawCircle(ctx, o.x, o.y, o.radius, o.color);
         });
         $("#bg").css("background-position-y",-(w.objects[0].y - 10));
     } else {
@@ -115,14 +124,38 @@ function renderWorld(w, canvas) {
     }
 }
 
+// used to create a bubble with the given spec
+// future possible params:
+// difficulty of popping,
+// filepath to sprite used to draw the bubble,
+// acceleration,
+// etc
+function bubble(canvas, radius, buoyancy, color) {
+    var bubble = {
+        x: Math.random() * canvas.width,
+        y: 500,
+        velocity: 0,
+        radius : radius,
+        buoyancy: buoyancy,
+        color: color
+    }
+    return bubble;
+}
+
 $(document).ready(function() {
     var canvas = $("#canvas")[0];
 
-    // bunny constants. (x, y) initial position on canvas
+    // bunny constants. 
+    // (x, y) initial position on canvas
+    // velocity - initial velocity
+    // buoyancy - buoyancy (really weight of fluid displaced but we don't care)
     var bunny = {
-        x : 200,
-        y : 10,
-        v : 0
+        x: 200,
+        y: 10,
+        velocity: 0,
+        buoyancy: 0,
+        radius: 20,
+        color: "rgba(0, 200, 200, 0.5)"
     };
 
     canvas.addEventListener("mousemove", function(e) {
@@ -137,7 +170,7 @@ $(document).ready(function() {
         startTime: Date.now(),
         time: Date.now(),
         objects: [bunny], 
-        acceleration: .01,
+        gravity: .01,
         over: false
     };
 
