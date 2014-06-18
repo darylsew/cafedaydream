@@ -1,5 +1,5 @@
-// TODO ...yeah this doesn't work
-// take advantage of browser caching jquery
+// TODO 
+//take advantage of browser caching jquery
 // http://stackoverflow.com/questions/1140402/how-to-add-jquery-in-js-file
 //var script = document.createElement('script');
 //script.src = 'http://code.jquery.com/jquery-1.11.0.min.js';
@@ -122,6 +122,12 @@ function renderWorld(w, canvas) {
             w.over = true;
         }
     }
+
+    // adding HUD
+    // TODO right align HUD
+    ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+    heightFromGround = Math.max(5000 - Math.floor(w.objects[0].y), 0) + "m"
+    ctx.fillText(heightFromGround, canvas.width - 40, 20);
 }
 
 // used to create a bubble with the given spec
