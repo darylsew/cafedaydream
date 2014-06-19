@@ -21,7 +21,12 @@ window.requestAnimFrame = function() {
     );
 }();
 
-
+// image storage
+// bubble images
+var bubbleImgs = new function() {
+	this.full = new Image();
+	this.full.src = "./Images/bubbles.png";
+}
 
 // utility functions
 function drawCircle(ctx, x, y, r, color) {
@@ -81,7 +86,8 @@ function updateWorld(w, canvas) {
 
     // TODO don't add bubbles randomly, add them to beat of a song
     if (Math.random()*100 < 2) {
-        w.objects[w.objects.length] = bubble(canvas, 25, .02, "rgba(255, 255, 255, 0.5");
+		var scale = Math.random()*50;
+        w.objects[w.objects.length] = bubble(canvas, scale, .02, "rgba(255, 255, 255, 0.5");
     }
 }
 
