@@ -139,7 +139,7 @@ function renderWorld(w, canvas) {
 function bubble(canvas, radius, buoyancy, color) {
     var bubble = {
         x: Math.random() * canvas.width,
-        y: 500,
+        y: screen.height + radius * 2,
         velocity: 0,
         radius : radius,
         buoyancy: buoyancy,
