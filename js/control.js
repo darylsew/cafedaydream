@@ -21,21 +21,21 @@ window.requestAnimFrame = function() {
     );
 }();
 
-// image storage
-// bubble images
-var bubbleImgs = new function() {
-	this.full = new Image();
-	this.full.src = "./Images/bubbles.png";
-}
-
 // utility functions
-function drawCircle(ctx, x, y, r, color) {
-    // lovely shade of blue
-    // ctx.fillStyle = "rgba(0, 200, 200, 0.5)";
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, 2*Math.PI, true);
-    ctx.fill();
+
+// r is the scaling factor
+function drawImage(ctx, x, y, r, imgName) {
+    var img = new Image();
+    img.src = imgName;
+    img.onload = function() {
+        // normalize
+        var norm = img.width * img.width + img.height * img.height;
+        var w = img.width / Math.sqrt(norm);
+        var h = img.height / Math.sqrt(norm);
+        // apply scaling factor
+        ctx.drawImage(img, x, y, w * r, h * r);
+        //ctx.drawImage(img, x, y);
+    };
 }
 
 function getMousePos(canvas, e) {
@@ -46,12 +46,30 @@ function getMousePos(canvas, e) {
     };
 }
 
+// used to create a bubble with the given spec
+// future possible params:
+// difficulty of popping,
+// filepath to sprite used to draw the bubble,
+// acceleration,
+// etc
+function bubble(canvas, radius, buoyancy, sprite) {
+    var bubble = {
+        x: Math.random() * canvas.width,
+        y: screen.height + radius * 2,
+        velocity: 0,
+        radius : radius,
+        buoyancy: buoyancy,
+        sprite: sprite
+    }
+    return bubble;
+}
+
 // w - world representation (i.e. model)
 // c - html canvas (i.e. view)
 function animate(w, canvas) {
     w.timestep = w.time - w.startTime;
-    console.log("Timestep: " + w.timestep);
-    console.log("Bunny coords: (" + w.objects[0].x + ", " + w.objects[0].y + ")");
+    //console.log("Timestep: " + w.timestep);
+    //console.log("Bunny coords: (" + w.objects[0].x + ", " + w.objects[0].y + ")");
 
     // get the graphics context from the canvas
     // this is an object that lets us draw onto the canvas
@@ -83,19 +101,15 @@ function updateWorld(w, canvas) {
         o.y -= o.velocity;
     });
 
-
     // TODO don't add bubbles randomly, add them to beat of a song
-    if (Math.random()*100 < 2) {
-		var scale = Math.random()*50;
-        w.objects[w.objects.length] = bubble(canvas, scale, .02, "rgba(255, 255, 255, 0.5");
+    if (Math.random()*100 < 5) {
+        var scale = 50 + Math.random()*50;
+        w.objects[w.objects.length] = bubble(canvas, scale, .02, "bubbleFull");
     }
 }
 
 // for rendering the world to the view
 function renderWorld(w, canvas) {
-    // loop through objects in the world and draw circles for each of them
-    // TODO draw image sprites based on objects, 
-    // which will store filepaths to images
     var ctx = canvas.getContext("2d");
 
     // scaling factor... could probably be cleaned up
@@ -106,7 +120,6 @@ function renderWorld(w, canvas) {
         canvas.height * factor;
 
     //testing remove scrolling -- scaling seems to add overflow
-    // uhh i found this online
     // http://stackoverflow.com/questions/19817899/jquery-or-javascript-how-to-disable-window-scroll-without-overflowhidden
     $('body').on({
         'mousewheel': function(e) {
@@ -119,7 +132,8 @@ function renderWorld(w, canvas) {
     // drawing circle && panning
     if (w.objects[0].y < canvas.height) {
         w.objects.forEach(function (o) {
-            drawCircle(ctx, o.x, o.y, o.radius, o.color);
+            //drawCircle(ctx, o.x, o.y, o.radius, o.color);
+            drawImage(ctx, o.x, o.y, o.radius, w.sprites[o.sprite]);
         });
         $("#bg").css("background-position-y",-(w.objects[0].y - 10));
     } else {
@@ -132,27 +146,11 @@ function renderWorld(w, canvas) {
     // adding HUD
     // TODO right align HUD
     ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
-    heightFromGround = Math.max(5000 - Math.floor(w.objects[0].y), 0) + "m"
+    heightFromGround = Math.max(10000 - Math.floor(w.objects[0].y), 0) + "m";
     ctx.fillText(heightFromGround, canvas.width - 40, 20);
 }
 
-// used to create a bubble with the given spec
-// future possible params:
-// difficulty of popping,
-// filepath to sprite used to draw the bubble,
-// acceleration,
-// etc
-function bubble(canvas, radius, buoyancy, color) {
-    var bubble = {
-        x: Math.random() * canvas.width,
-        y: screen.height + radius * 2,
-        velocity: 0,
-        radius : radius,
-        buoyancy: buoyancy,
-        color: color
-    }
-    return bubble;
-}
+
 
 $(document).ready(function() {
     var canvas = $("#canvas")[0];
@@ -166,16 +164,27 @@ $(document).ready(function() {
         y: 10,
         velocity: 0,
         buoyancy: 0,
-        radius: 20,
-        color: "rgba(0, 200, 200, 0.5)"
+        radius: 100,
+        sprite: "circle"
     };
 
     canvas.addEventListener("mousemove", function(e) {
         var mousePos = getMousePos(canvas, e);
         bunny.x = mousePos.x;
-        //bunny.y = mousePos.y;
     });
 
+    // list of filenames for images we'll draw
+    var sprites = {
+        bubbleFull: "./assets/bubbles/full.png",
+        circle: "./assets/bunnies/circle.png"
+    };
+
+    // cache the images before the game starts
+    var keys = Object.keys(sprites);
+    keys.forEach(function(key) {
+        var img = new Image();
+        img.src = sprites[key]; // filename
+    });
 
     // world representation; initially no bubbles/obstacles
     var world = {
@@ -183,8 +192,10 @@ $(document).ready(function() {
         time: Date.now(),
         objects: [bunny], 
         gravity: .01,
-        over: false
+        over: false,
+        sprites: sprites
     };
 
+    // TODO loading screen, start button, menu for selecting songs, etc
     animate(world, canvas);
 });
