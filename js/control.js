@@ -23,11 +23,15 @@ window.requestAnimFrame = function() {
 
 // utility functions
 
-function drawImage(ctx, o, img) {
+function drawImage(w, ctx, o) {
     // scale by radius
     // divide by 1000 to get more reasonable sizes
     // (hack for normalization storage in ints)
-    ctx.drawImage(img, o.x, o.y, 
+    //w.sprites[o.sprite]
+    var img = w.sprites[o.sprite];
+    ctx.drawImage(img, 
+                  o.x, 
+                  o.y + w.translatedY, 
                   img.width * o.radius / 1000, 
                   img.height * o.radius / 1000);
 }
@@ -64,8 +68,10 @@ function bubble(canvas, radius, buoyancy, sprite) {
 function addHUD(w, ctx) {
     // TODO right align HUD
     ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
-    heightFromGround = Math.max(10000 - Math.floor(w.objects[0].y), 0) + "m";
-    ctx.fillText(heightFromGround, canvas.width - 40, 20);
+    var heightFromGround = Math.max(10000 - Math.floor(w.objects[0].y), 0) + "m";
+    var velocity = w.objects[0].velocity + "m/s";
+    ctx.fillText(heightFromGround, canvas.width - 40, 20 + w.translatedY);
+    //ctx.fillText(velocity, canvas.width - 40, 25 + w.translatedY);
 }
 
 // w - world representation (i.e. model)
@@ -78,7 +84,7 @@ function animate(w, canvas) {
     // this is an object that lets us draw onto the canvas
     var ctx = canvas.getContext("2d");
     // clear context to draw the new stuff
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, w.translatedY, canvas.width, w.translatedY + canvas.height);
     renderWorld(w, canvas);
 
     // make updates to the world - time, gravity, etc
@@ -108,10 +114,12 @@ function updateWorld(w, canvas) {
     // TODO don't add bubbles randomly, add them to beat of a song
     // XXX Need to generate a bunch of bubble images of random sizes at the start,
     // resizing bubbles dynamically makes for canvas flicker...
-    if (Math.random()*100 < 2) {
+    if (Math.random()*100 < 4) {
         var scale = 50 + Math.random()*50;
-        w.objects[w.objects.length] = bubble(canvas, scale, .02, "bubbleFull");
+        w.objects[w.objects.length] = bubble(canvas, scale, 0.01, "bubbleFull");
     }
+
+    w.translatedY = w.translatedY + 2;
 }
 
 // for rendering the world to the view
@@ -140,7 +148,7 @@ function renderWorld(w, canvas) {
         w.objects.forEach(function (o) {
             //drawCircle(ctx, o.x, o.y, o.radius, o.color);
             //drawImage(ctx, o.x, o.y, o.radius, w.sprites[o.sprite]);
-            drawImage(ctx, o, w.sprites[o.sprite]);
+            drawImage(w, ctx, o);
         });
         $("#bg").css("background-position-y",-(w.objects[0].y - 10));
     } else {
@@ -151,6 +159,7 @@ function renderWorld(w, canvas) {
     }
 
     addHUD(w, ctx);
+    ctx.translate(0, -2);
 }
 
 
@@ -204,9 +213,10 @@ $(document).ready(function() {
         startTime: Date.now(),
         time: Date.now(),
         objects: [bunny], 
-        gravity: .01,
+        gravity: .005,
         over: false,
-        sprites: sprites
+        sprites: sprites,
+        translatedY: 0
     };
 
     // TODO loading screen, start button, menu for selecting songs, etc
