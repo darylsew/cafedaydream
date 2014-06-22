@@ -24,18 +24,10 @@ window.requestAnimFrame = function() {
 // utility functions
 
 // r is the scaling factor
-function drawImage(ctx, x, y, r, imgName) {
-    var img = new Image();
-    img.src = imgName;
-    img.onload = function() {
-        // normalize
-        var norm = img.width * img.width + img.height * img.height;
-        var w = img.width / Math.sqrt(norm);
-        var h = img.height / Math.sqrt(norm);
-        // apply scaling factor
-        ctx.drawImage(img, x, y, w * r, h * r);
-        //ctx.drawImage(img, x, y);
-    };
+function drawImage(ctx, o, img) {
+    //ctx.drawImage(img, x, y, w * r, h * r);
+    // TODO try both above and passing in image w preset width
+    ctx.drawImage(img, o.x, o.y, img.width, img.height);
 }
 
 function getMousePos(canvas, e) {
@@ -64,10 +56,18 @@ function bubble(canvas, radius, buoyancy, sprite) {
     return bubble;
 }
 
+// adds HUD
+// currently only displays meters to the ground
+function addHUD(w, ctx) {
+    // TODO right align HUD
+    ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+    heightFromGround = Math.max(10000 - Math.floor(w.objects[0].y), 0) + "m";
+    ctx.fillText(heightFromGround, canvas.width - 40, 20);
+}
+
 // w - world representation (i.e. model)
 // c - html canvas (i.e. view)
 function animate(w, canvas) {
-    w.timestep = w.time - w.startTime;
     //console.log("Timestep: " + w.timestep);
     //console.log("Bunny coords: (" + w.objects[0].x + ", " + w.objects[0].y + ")");
 
@@ -92,16 +92,19 @@ function animate(w, canvas) {
 // for any updates to our world
 function updateWorld(w, canvas) {
     w.time = Date.now();
+    w.timestep = w.time - w.startTime;
     // loop through objects, update positions
     // x = vit + at^2
     w.objects.forEach(function (o) {
-        // TODO might want to add drag here to be slightly more accurate
+        // TODO (low priority) might want to add drag here to be slightly more accurate
         o.velocity -= w.gravity;
         o.velocity += o.buoyancy;
         o.y -= o.velocity;
     });
 
     // TODO don't add bubbles randomly, add them to beat of a song
+    // XXX Need to generate a bunch of bubble images of random sizes at the start,
+    // resizing bubbles dynamically makes for canvas flicker...
     if (Math.random()*100 < 5) {
         var scale = 50 + Math.random()*50;
         w.objects[w.objects.length] = bubble(canvas, scale, .02, "bubbleFull");
@@ -133,7 +136,8 @@ function renderWorld(w, canvas) {
     if (w.objects[0].y < canvas.height) {
         w.objects.forEach(function (o) {
             //drawCircle(ctx, o.x, o.y, o.radius, o.color);
-            drawImage(ctx, o.x, o.y, o.radius, w.sprites[o.sprite]);
+            //drawImage(ctx, o.x, o.y, o.radius, w.sprites[o.sprite]);
+            drawImage(ctx, o, w.sprites[o.sprite]);
         });
         $("#bg").css("background-position-y",-(w.objects[0].y - 10));
     } else {
@@ -143,13 +147,8 @@ function renderWorld(w, canvas) {
         }
     }
 
-    // adding HUD
-    // TODO right align HUD
-    ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
-    heightFromGround = Math.max(10000 - Math.floor(w.objects[0].y), 0) + "m";
-    ctx.fillText(heightFromGround, canvas.width - 40, 20);
+    addHUD(w, ctx);
 }
-
 
 
 $(document).ready(function() {
@@ -164,8 +163,8 @@ $(document).ready(function() {
         y: 10,
         velocity: 0,
         buoyancy: 0,
-        radius: 100,
-        sprite: "circle"
+        radius: 50,
+        sprite: "upsideDown"
     };
 
     canvas.addEventListener("mousemove", function(e) {
@@ -176,7 +175,8 @@ $(document).ready(function() {
     // list of filenames for images we'll draw
     var sprites = {
         bubbleFull: "./assets/bubbles/full.png",
-        circle: "./assets/bunnies/circle.png"
+        circle: "./assets/bunnies/circle.png",
+        upsideDown: "./assets/bunnies/upsidedown.png"
     };
 
     // cache the images before the game starts
@@ -184,6 +184,16 @@ $(document).ready(function() {
     keys.forEach(function(key) {
         var img = new Image();
         img.src = sprites[key]; // filename
+        // deal with size
+        img.onload = function() {
+            // normalize
+            var norm = img.width * img.width + img.height * img.height;
+            var width = img.width / Math.sqrt(norm);
+            var height = img.height / Math.sqrt(norm);
+            img.width = width * 100;
+            img.height = height * 100;
+        };
+        sprites[key] = img; 
     });
 
     // world representation; initially no bubbles/obstacles
