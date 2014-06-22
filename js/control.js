@@ -23,11 +23,13 @@ window.requestAnimFrame = function() {
 
 // utility functions
 
-// r is the scaling factor
 function drawImage(ctx, o, img) {
-    //ctx.drawImage(img, x, y, w * r, h * r);
-    // TODO try both above and passing in image w preset width
-    ctx.drawImage(img, o.x, o.y, img.width, img.height);
+    // scale by radius
+    // divide by 1000 to get more reasonable sizes
+    // (hack for normalization storage in ints)
+    ctx.drawImage(img, o.x, o.y, 
+                  img.width * o.radius / 1000, 
+                  img.height * o.radius / 1000);
 }
 
 function getMousePos(canvas, e) {
@@ -47,12 +49,13 @@ function getMousePos(canvas, e) {
 function bubble(canvas, radius, buoyancy, sprite) {
     var bubble = {
         x: Math.random() * canvas.width,
-        y: screen.height + radius * 2,
+        y: 600 + radius * 2, 
         velocity: 0,
         radius : radius,
         buoyancy: buoyancy,
         sprite: sprite
     }
+    console.log(canvas.height);
     return bubble;
 }
 
@@ -105,7 +108,7 @@ function updateWorld(w, canvas) {
     // TODO don't add bubbles randomly, add them to beat of a song
     // XXX Need to generate a bunch of bubble images of random sizes at the start,
     // resizing bubbles dynamically makes for canvas flicker...
-    if (Math.random()*100 < 5) {
+    if (Math.random()*100 < 2) {
         var scale = 50 + Math.random()*50;
         w.objects[w.objects.length] = bubble(canvas, scale, .02, "bubbleFull");
     }
@@ -190,8 +193,8 @@ $(document).ready(function() {
             var norm = img.width * img.width + img.height * img.height;
             var width = img.width / Math.sqrt(norm);
             var height = img.height / Math.sqrt(norm);
-            img.width = width * 100;
-            img.height = height * 100;
+            img.width = width * 1000;
+            img.height = height * 1000;
         };
         sprites[key] = img; 
     });
