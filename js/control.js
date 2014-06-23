@@ -31,7 +31,7 @@ function drawImage(w, ctx, o) {
     var img = w.sprites[o.sprite];
     ctx.drawImage(img, 
                   o.x, 
-                  o.y + w.translatedY, 
+                  o.y, 
                   img.width * o.radius / 1000, 
                   img.height * o.radius / 1000);
 }
@@ -50,16 +50,15 @@ function getMousePos(canvas, e) {
 // filepath to sprite used to draw the bubble,
 // acceleration,
 // etc
-function bubble(canvas, radius, buoyancy, sprite) {
+function bubble(w, canvas, radius, buoyancy, sprite) {
     var bubble = {
         x: Math.random() * canvas.width,
-        y: 600 + radius * 2, 
+        y: 600 + radius * 2 + w.translatedY,
         velocity: 0,
         radius : radius,
         buoyancy: buoyancy,
         sprite: sprite
     }
-    console.log(canvas.height);
     return bubble;
 }
 
@@ -112,14 +111,12 @@ function updateWorld(w, canvas) {
     });
 
     // TODO don't add bubbles randomly, add them to beat of a song
-    // XXX Need to generate a bunch of bubble images of random sizes at the start,
-    // resizing bubbles dynamically makes for canvas flicker...
     if (Math.random()*100 < 4) {
         var scale = 50 + Math.random()*50;
-        w.objects[w.objects.length] = bubble(canvas, scale, 0.01, "bubbleFull");
+        w.objects[w.objects.length] = bubble(w, canvas, scale, 0.01, "bubbleFull");
     }
 
-    w.translatedY = w.translatedY + 2;
+    w.translatedY = w.translatedY + 1;
 }
 
 // for rendering the world to the view
@@ -144,7 +141,7 @@ function renderWorld(w, canvas) {
     });
 
     // drawing circle && panning
-    if (w.objects[0].y < canvas.height) {
+    if (w.objects[0].y < canvas.height + w.translatedY) {
         w.objects.forEach(function (o) {
             //drawCircle(ctx, o.x, o.y, o.radius, o.color);
             //drawImage(ctx, o.x, o.y, o.radius, w.sprites[o.sprite]);
@@ -159,7 +156,7 @@ function renderWorld(w, canvas) {
     }
 
     addHUD(w, ctx);
-    ctx.translate(0, -2);
+    ctx.translate(0, -1);
 }
 
 
@@ -173,9 +170,9 @@ $(document).ready(function() {
     var bunny = {
         x: 200,
         y: 10,
-        velocity: 0,
+        velocity: -1,
         buoyancy: 0,
-        radius: 50,
+        radius: 75,
         sprite: "upsideDown"
     };
 
