@@ -1,0 +1,46 @@
+body {
+	font-family: Helvetica, Arial, sans-serif;
+	font-size: 10pt;
+	color: #272727;
+}
+
+.info {
+	position: absolute;
+	display: none;
+	/*border: 1px solid #272727;*/
+	border-bottom: 1px solid #d4d4d4;
+	margin: auto;
+	left: 0; right: 0;
+	top: 38%;
+	width: 65%;
+	padding-left: 2%;
+	padding-right: 2%;
+}
+
+#navi {
+	position: absolute;
+	text-align: center;
+/*	border: 1px solid #272727; */
+	width: 65%;
+	left: 0; right: 0;
+	margin: auto;
+	height: 30%;
+	top: 20%;
+}
+
+.tile {
+	border: 1px solid #272727;
+	max-height: 100%;
+	margin-left: 0.2%;
+	margin-right: 0.2;
+}
+
+.close {
+	color: #abb1b6;
+	font-variant: small-caps;
+}
+
+h2 {
+	color: #493995;
+	font-variant: small-caps;
+}
