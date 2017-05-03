@@ -44,3 +44,17 @@ h2 {
 	color: #493995;
 	font-variant: small-caps;
 }
+
+a:link {
+	color: #3cc9d6;
+	text-decoration: none;
+	font-variant: small-caps;
+}
+
+a:hover {
+	color: #42ebed;
+}
+
+a:visited {
+	color: #3cc9d6;
+}
