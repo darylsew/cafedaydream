@@ -1,12 +1,10 @@
 $(document).ready(function() {
 	/* Load a specific page */
 	if (window.location.hash) {
-		console.log("help");
 		var dataDivs = document.querySelectorAll('*[id]:not([id="navi"]');
  		var targetId = window.location.hash.substring(1);
  		for (var item of dataDivs) {
  			if (targetId === item.id) {
- 				console.log("here");
  				$("#navi").animate({ "top": "5%" }, "slow");
 				$("#" + targetId).slideToggle("slow");
  			}
